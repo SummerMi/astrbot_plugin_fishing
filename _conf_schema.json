@@ -1,0 +1,123 @@
+{
+  "secret_key": {
+    "description": "webui的密钥",
+    "type": "string",
+    "hint": "登录管理界面的密钥，建议使用随机字符串",
+    "default": "SecretKey"
+  },
+  "port": {
+    "description": "webui的端口",
+    "type": "int",
+    "hint": "请确保端口未被占用",
+    "default": 7777
+  },
+  "is_tax": {
+    "description": "是否启用税收",
+    "type": "bool",
+    "hint": "税收的开关",
+    "default": true
+  },
+  "threshold": {
+    "description": "税收的起征点",
+    "type": "int",
+    "hint": "税收的起征点，低于此值不收税",
+    "default": 100000
+  },
+  "step_coins": {
+    "description": "税收的步长",
+    "type": "int",
+    "hint": "税收的步长，超过起征点后每增加此值税率增加",
+    "default": 100000
+  },
+  "step_rate": {
+    "description": "税收的步长税率",
+    "type": "float",
+    "hint": "税收的步长税率，超过起征点后每增加step_coins税率增加",
+    "default": 0.01
+  },
+  "min_rate": {
+    "description": "税收的起点税率",
+    "type": "float",
+    "hint": "税收的初始税率，达到起征点后开始收税的初始税率",
+    "default": 0.001
+  },
+  "max_rate": {
+    "description": "税收的最大税率",
+    "type": "float",
+    "hint": "税收的最大税率，超过此值不再增加",
+    "default": 0.2
+  },
+  "area2num": {
+    "description": "钓鱼区域2中稀有鱼的数量",
+    "type": "int",
+    "hint": "钓鱼区域2中稀有鱼的数量，影响稀有鱼的掉落概率",
+    "default": 2000
+  },
+  "area3num": {
+    "description": "钓鱼区域3中稀有鱼的数量",
+    "type": "int",
+    "hint": "钓鱼区域3中稀有鱼的数量，影响稀有鱼的掉落概率",
+    "default": 500
+  },
+  "fish_cost": {
+    "description": "钓鱼消耗的金币",
+    "type": "int",
+    "hint": "每次钓鱼消耗的金币",
+    "default": 10
+  },
+  "fish_cooldown_seconds": {
+    "description": "钓鱼的冷却时间",
+    "type": "int",
+    "hint": "每次钓鱼后的冷却时间，单位为秒",
+    "default": 180
+  },
+  "steal_cooldown_seconds": {
+    "description": "偷鱼的冷却时间",
+    "type": "int",
+    "hint": "每次偷鱼后的冷却时间，单位为秒",
+    "default": 14400
+  },
+  "user_initial_coins": {
+    "description": "用户初始金币",
+    "type": "int",
+    "hint": "新用户注册时的初始金币数量",
+    "default": 200
+  },
+  "market_listing_tax_rate": {
+    "description": "市场上架税率",
+    "type": "float",
+    "hint": "在市场上架物品时收取的税率",
+    "default": 0.05
+  },
+  "sell_prices": {
+    "description": "物品(鱼竿和饰品)的出售价格",
+    "type": "object",
+    "items": {
+      "by_rarity_1": {
+        "type": "int",
+        "default": 100,
+        "description": "稀有度1的出售价格"
+      },
+      "by_rarity_2": {
+        "type": "int",
+        "default": 500,
+        "description": "稀有度2的出售价格"
+      },
+      "by_rarity_3": {
+        "type": "int",
+        "default": 2000,
+        "description": "稀有度3的出售价格"
+      },
+      "by_rarity_4": {
+        "type": "int",
+        "default": 5000,
+        "description": "稀有度4的出售价格"
+      },
+      "by_rarity_5": {
+        "type": "int",
+        "default": 10000,
+        "description": "稀有度5的出售价格"
+      }
+    }
+  }
+}
