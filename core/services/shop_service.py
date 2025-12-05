@@ -74,7 +74,7 @@ class ShopService:
                 return {"success": False, "message": "鱼竿一次只能购买一个"}
             item_template = self.item_template_repo.get_rod_by_id(item_template_id)
             if item_template and item_template.source == "shop" and item_template.purchase_cost:
-                total_cost = item_template.purchase_cost
+                total_cost = item_template.purchase_cost * quantity
                 item_name = item_template.name
             else:
                 return {"success": False, "message": "此鱼竿无法购买"}
@@ -99,11 +99,12 @@ class ShopService:
         self.user_repo.update(user)
 
         if item_type == "rod" and item_template:
-            self.inventory_repo.add_rod_instance(
-                user_id=user_id,
-                rod_id=item_template.rod_id,
-                durability=item_template.durability
-            )
+            for _ in range(quantity):
+                self.inventory_repo.add_rod_instance(
+                    user_id=user_id,
+                    rod_id=item_template.rod_id,
+                    durability=item_template.durability
+                )
         elif item_type == "bait":
             self.inventory_repo.update_bait_quantity(
                 user_id=user_id,
