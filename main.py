@@ -709,7 +709,13 @@ class FishingPlugin(Star):
         if not rod_instance_id.isdigit():
             yield event.plain_result("❌ 鱼竿 ID 必须是数字，请检查后重试。")
             return
-        result = self.shop_service.buy_item(user_id, "rod", int(rod_instance_id))
+        quantity = 1  # 默认购买数量为1
+        if len(args) == 3:
+            quantity = args[2]
+            if not quantity.isdigit() or int(quantity) <= 0:
+                yield event.plain_result("❌ 购买数量必须是正整数，请检查后重试。")
+                return
+        result = self.shop_service.buy_item(user_id, "rod", int(rod_instance_id), int(quantity))
         if result:
             if result["success"]:
                 yield event.plain_result(result["message"])
