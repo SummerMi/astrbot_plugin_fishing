@@ -70,8 +70,6 @@ class ShopService:
 
         # 1. 获取物品信息并计算总价
         if item_type == "rod":
-            if quantity > 1:
-                return {"success": False, "message": "鱼竿一次只能购买一个"}
             item_template = self.item_template_repo.get_rod_by_id(item_template_id)
             if item_template and item_template.source == "shop" and item_template.purchase_cost:
                 total_cost = item_template.purchase_cost * quantity
