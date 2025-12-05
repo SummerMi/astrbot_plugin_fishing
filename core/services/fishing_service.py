@@ -179,17 +179,27 @@ class FishingService:
         # 4. 成功，生成渔获
         # 设置稀有度分布
         rarity_weights = {
-            1: [0.65, 0.25, 0.09, 0.01, 0],  # 区域一：4星概率极低，5星为0
-            2: [0.5, 0.3, 0.16, 0.039, 0.001],  # 区域二：提升4星，引入极低概率5星
-            3: [0.5, 0.3, 0.15, 0.045, 0.005]  # 区域三：大幅提升4星和5星
+            1: [0.70, 0.10, 0.09, 0.01, 0.00],  # 强正偏：
+            2: [0.50, 0.30, 0.14, 0.05, 0.01],  # 中等正偏：
+            3: [0.21, 0.23, 0.25, 0.21, 0.10]   # 弱正偏/微负偏：
         }
         current_weights = rarity_weights.get(user.fishing_zone_id, rarity_weights[1])
         # 根据权重生成稀有度
         rarity_distribution = current_weights.copy()
         # 应用稀有度加成
         if rare_chance > 0.0:
-            # 增加稀有鱼出现的几率
-            rarity_distribution = [x + rare_chance for x in rarity_distribution]
+            # 增加稀有鱼出现的几率，实现负偏效果
+            # 为不同稀有度设置不同的加成系数，高稀有度获得更高的加成
+            rarity_levels = [1, 2, 3, 4, 5]  # 1星到5星
+            # 使用指数函数生成加成系数，确保高稀有度获得显著更多的加成
+            bonus_coefficients = [0.1, 0.3, 0.6, 1.0, 1.3]  # 可以根据需要调整这些系数
+            
+            # 计算各稀有度的实际加成
+            rarity_distribution = [
+                x + rare_chance * bonus_coefficients[i] 
+                for i, x in enumerate(rarity_distribution)
+            ]
+            
             # 归一化概率分布
             total = sum(rarity_distribution)
             rarity_distribution = [x / total for x in rarity_distribution]
