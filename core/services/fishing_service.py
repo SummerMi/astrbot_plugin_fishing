@@ -75,7 +75,8 @@ class FishingService:
             return {"success": False, "message": "用户不存在，无法钓鱼。"}
 
         # 1. 检查成本
-        fishing_cost = self.config.get("fishing", {}).get("cost", 10) + (user.fishing_zone_id - 1) * 50
+        zone_cost_map = {1: 15, 2: 60, 3: 90}
+        fishing_cost = zone_cost_map.get(user.fishing_zone_id, 15)
         if not user.can_afford(fishing_cost):
             return {"success": False, "message": f"金币不足，需要 {fishing_cost} 金币。"}
 

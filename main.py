@@ -1138,10 +1138,15 @@ class FishingPlugin(Star):
                         continue
                     target_id = comp_id
                     break
+
+                    break
         if target_id is None:
             yield event.plain_result("请在消息中@要偷鱼的用户")
             return
         if str(target_id) == str(user_id):
+            yield event.plain_result("")
+            return
+
             yield event.plain_result("不能偷自己的鱼哦！")
             return
         result = self.game_mechanics_service.steal_fish(user_id, target_id)
