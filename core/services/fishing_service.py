@@ -587,7 +587,7 @@ class FishingService:
                 # 每轮检查间隔
                 # time.sleep(40)
                 # cd配置为180时，轮询间隔40s会导致实际cd变大为200s
-                time.sleep(1)
+                time.sleep(10)
 
             except Exception as e:
                 logger.error(f"自动钓鱼任务出错: {e}")
