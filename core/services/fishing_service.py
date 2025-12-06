@@ -74,6 +74,11 @@ class FishingService:
         if not user:
             return {"success": False, "message": "用户不存在，无法钓鱼。"}
 
+        # 鱼塘已满直接提示，不扣费
+        user_fish_inventory = self.inventory_repo.get_fish_inventory(user.user_id)
+        if user_fish_inventory is not None and sum(item.quantity for item in user_fish_inventory) >= user.fish_pond_capacity:
+            return {"success": False, "message": "鱼塘已满，请先卖鱼或扩容后再钓。"}
+
         # 1. 检查成本
         zone_cost_map = {1: 15, 2: 60, 3: 90}
         fishing_cost = zone_cost_map.get(user.fishing_zone_id, 15)
@@ -244,23 +249,12 @@ class FishingService:
                 if new_fish_list:
                     fish_template = get_fish_template(new_fish_list, coins_chance)
 
-        # 计算最终属性
+        # ??????
         weight = random.randint(fish_template.min_weight, fish_template.max_weight)
         value = fish_template.base_value
 
-        # 计算一下是否超过用户鱼塘容量
-        user_fish_inventory = self.inventory_repo.get_fish_inventory(user.user_id)
-        if user.fish_pond_capacity == sum(item.quantity for item in user_fish_inventory):
-            # 随机删除用户的一条鱼
-            random_fish = random.choice(user_fish_inventory)
-            self.inventory_repo.update_fish_quantity(
-                user.user_id,
-                random_fish.fish_id,
-                -1
-            )
-
-        if fish_template.rarity >= 5:
-            # 如果是5星鱼，增加用户的稀有鱼捕获计数
+        # ???5???????????????
+        if fish_template.rarity == 5:
             zone = self.inventory_repo.get_zone_by_id(user.fishing_zone_id)
             if zone:
                 zone.rare_fish_caught_today += 1

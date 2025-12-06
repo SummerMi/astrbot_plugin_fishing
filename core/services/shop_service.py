@@ -7,6 +7,9 @@ from ..repositories.abstract_repository import (
     AbstractUserRepository
 )
 
+
+MAX_ROD_QTY = 20
+MAX_BAIT_QTY = 500
 class ShopService:
     """封装与系统商店相关的业务逻辑"""
 

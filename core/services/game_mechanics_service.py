@@ -33,49 +33,47 @@ class GameMechanicsService:
         self.thread_pool = ThreadPoolExecutor(max_workers=5)
 
     def perform_wipe_bomb(self, user_id: str, contribution_amount: int) -> Dict[str, Any]:
-        """
-        处理“擦弹”的完整逻辑。
-        """
+        """擦弹：无限次，赔率刺激但长期负收益"""
         user = self.user_repo.get_by_id(user_id)
         if not user:
             return {"success": False, "message": "用户不存在"}
 
-        # 1. 验证投入金额
         if contribution_amount <= 0:
             return {"success": False, "message": "投入金额必须大于0"}
         if not user.can_afford(contribution_amount):
             return {"success": False, "message": f"金币不足，当前拥有 {user.coins} 金币"}
 
-        # 2. 检查每日次数限制
         wipe_bomb_config = self.config.get("wipe_bomb", {})
-        max_attempts = wipe_bomb_config.get("max_attempts_per_day", 3)
         attempts_today = self.log_repo.get_wipe_bomb_log_count_today(user_id)
-        if attempts_today >= max_attempts:
-            return {"success": False, "message": f"你今天已经使用了{max_attempts}次擦弹，明天再来吧！"}
 
-        # 3. 计算随机奖励倍数 (使用加权随机)
-        ranges = wipe_bomb_config.get("reward_ranges", [])
+        ranges = wipe_bomb_config.get("reward_ranges") or [
+            (0.0, 0.5, 40),
+            (0.5, 0.9, 30),
+            (0.9, 1.2, 20),
+            (1.5, 3.0, 8),
+            (3.0, 5.0, 2),
+        ]
         total_weight = sum(w for _, _, w in ranges)
-        rand_val = random.uniform(0, total_weight)
+        if total_weight <= 0:
+            return {"success": False, "message": "擦弹配置错误"}
 
+        rand_val = random.uniform(0, total_weight)
         reward_multiplier = 0.0
         current_weight = 0
         for r_min, r_max, weight in ranges:
             current_weight += weight
             if rand_val <= current_weight:
-                reward_multiplier = round(random.uniform(r_min, r_max), 1)
+                reward_multiplier = round(random.uniform(r_min, r_max), 2)
                 break
 
-        # 4. 计算最终金额并执行事务
         reward_amount = int(contribution_amount * reward_multiplier)
         profit = reward_amount - contribution_amount
 
         user.coins += profit
         self.user_repo.update(user)
 
-        # 5. 记录日志
         log_entry = WipeBombLog(
-            log_id=0, # DB自增
+            log_id=0,
             user_id=user_id,
             contribution_amount=contribution_amount,
             reward_multiplier=reward_multiplier,
@@ -84,8 +82,6 @@ class GameMechanicsService:
         )
         self.log_repo.add_wipe_bomb_log(log_entry)
 
-        # 上传非敏感数据到服务器
-        # 在单独线程中异步上传数据
         def upload_data_async():
             upload_data = {
                 "user_id": user_id,
@@ -103,9 +99,7 @@ class GameMechanicsService:
             except Exception as e:
                 logger.error(f"上传数据时发生错误: {e}")
 
-        # 启动异步线程进行数据上传，不阻塞主流程
         self.thread_pool.submit(upload_data_async)
-
 
         return {
             "success": True,
@@ -113,9 +107,9 @@ class GameMechanicsService:
             "multiplier": reward_multiplier,
             "reward": reward_amount,
             "profit": profit,
-            "remaining_today": "∞" if max_attempts is None or max_attempts <= 0 else max_attempts - (attempts_today + 1)
+            "remaining_today": "∞",
+            "attempts_today": attempts_today + 1,
         }
-
     def get_wipe_bomb_history(self, user_id: str, limit: int = 10) -> Dict[str, Any]:
         """
         获取用户的擦弹历史记录。
