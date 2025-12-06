@@ -585,7 +585,9 @@ class FishingService:
                     #      logger.info(f"用户 {user_id} 自动钓鱼失败: {result['message']}")
 
                 # 每轮检查间隔
-                time.sleep(40)
+                # time.sleep(40)
+                # cd配置为180时，轮询间隔40s会导致实际cd变大为200s
+                time.sleep(10)
 
             except Exception as e:
                 logger.error(f"自动钓鱼任务出错: {e}")
