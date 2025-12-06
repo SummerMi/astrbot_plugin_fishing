@@ -67,7 +67,10 @@ class SqliteInventoryRepository(AbstractInventoryRepository):
 
     def get_fish_inventory_value(self, user_id: str, rarity: Optional[int] = None) -> int:
         query = """
-            SELECT SUM(COALESCE(ufi.actual_value, f.base_value) * ufi.quantity)
+            SELECT SUM(
+                (CASE WHEN ufi.actual_value IS NOT NULL AND ufi.actual_value > 0 THEN ufi.actual_value ELSE f.base_value END)
+                * ufi.quantity
+            )
             FROM user_fish_inventory ufi
             JOIN fish f ON ufi.fish_id = f.fish_id
             WHERE ufi.user_id = ?
