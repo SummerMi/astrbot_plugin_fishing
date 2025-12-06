@@ -33,14 +33,33 @@ class InventoryService:
 
         # 为了丰富信息，可以从模板仓储获取鱼的详细信息
         enriched_items = []
+        total_base_value = 0
+        total_bonus_value = 0
+        
         for item in inventory_items:
             fish_template = self.item_template_repo.get_fish_by_id(item.fish_id)
             if fish_template:
+                # 计算单条鱼的实际价值（考虑数量）
+                actual_value_per_fish = item.actual_value if item.actual_value > 0 else fish_template.base_value
+                actual_total_value = actual_value_per_fish * item.quantity
+                base_total_value = fish_template.base_value * item.quantity
+                bonus_value = actual_total_value - base_total_value
+                
+                total_base_value += base_total_value
+                total_bonus_value += bonus_value
+                
+                bonus_value_per_fish = actual_value_per_fish - fish_template.base_value
+                bonus_percentage = (bonus_value_per_fish / fish_template.base_value * 100) if fish_template.base_value > 0 else 0
                 enriched_items.append({
                     "name": fish_template.name,
                     "rarity": fish_template.rarity,
                     "base_value": fish_template.base_value,
-                    "quantity": item.quantity
+                    "actual_value_per_fish": actual_value_per_fish,
+                    "bonus_value_per_fish": bonus_value_per_fish,
+                    "bonus_percentage": bonus_percentage,
+                    "quantity": item.quantity,
+                    "actual_total_value": actual_total_value,
+                    "bonus_total_value": bonus_value
                 })
 
         return {
@@ -48,7 +67,9 @@ class InventoryService:
             "fishes": enriched_items,
             "stats": {
                 "total_count": sum(item["quantity"] for item in enriched_items),
-                "total_value": total_value
+                "total_value": total_value,
+                "total_base_value": total_base_value,
+                "total_bonus_value": total_bonus_value
             }
         }
 

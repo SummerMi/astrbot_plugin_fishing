@@ -189,6 +189,7 @@ class UserFishInventoryItem:
     user_id: str
     fish_id: int
     quantity: int
+    actual_value: int = 0
 
 @dataclass
 class FishingRecord:

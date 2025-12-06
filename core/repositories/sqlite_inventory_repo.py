@@ -62,12 +62,12 @@ class SqliteInventoryRepository(AbstractInventoryRepository):
     def get_fish_inventory(self, user_id: str) -> List[UserFishInventoryItem]:
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT user_id, fish_id, quantity FROM user_fish_inventory WHERE user_id = ? AND quantity > 0", (user_id,))
+            cursor.execute("SELECT user_id, fish_id, quantity, actual_value FROM user_fish_inventory WHERE user_id = ? AND quantity > 0", (user_id,))
             return [self._row_to_fish_item(row) for row in cursor.fetchall()]
 
     def get_fish_inventory_value(self, user_id: str, rarity: Optional[int] = None) -> int:
         query = """
-            SELECT SUM(f.base_value * ufi.quantity)
+            SELECT SUM(COALESCE(ufi.actual_value, f.base_value) * ufi.quantity)
             FROM user_fish_inventory ufi
             JOIN fish f ON ufi.fish_id = f.fish_id
             WHERE ufi.user_id = ?
@@ -83,14 +83,24 @@ class SqliteInventoryRepository(AbstractInventoryRepository):
             result = cursor.fetchone()
             return result[0] if result and result[0] is not None else 0
 
-    def add_fish_to_inventory(self, user_id: str, fish_id: int, quantity: int = 1) -> None:
+    def add_fish_to_inventory(self, user_id: str, fish_id: int, quantity: int = 1, actual_value: int = 0) -> None:
         with self._get_connection() as conn:
             cursor = conn.cursor()
+            
+            # 如果actual_value为0，查询基础价值作为默认值
+            if actual_value == 0:
+                cursor.execute("SELECT base_value FROM fish WHERE fish_id = ?", (fish_id,))
+                result = cursor.fetchone()
+                if result:
+                    actual_value = result[0]
+            
             cursor.execute("""
-                INSERT INTO user_fish_inventory (user_id, fish_id, quantity)
-                VALUES (?, ?, ?)
-                ON CONFLICT(user_id, fish_id) DO UPDATE SET quantity = quantity + excluded.quantity
-            """, (user_id, fish_id, quantity))
+                INSERT INTO user_fish_inventory (user_id, fish_id, quantity, actual_value)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id, fish_id) DO UPDATE SET 
+                    quantity = quantity + excluded.quantity,
+                    actual_value = CASE WHEN excluded.actual_value > 0 THEN excluded.actual_value ELSE actual_value END
+            """, (user_id, fish_id, quantity, actual_value))
             conn.commit()
 
     def clear_fish_inventory(self, user_id: str, rarity: Optional[int] = None) -> None:
