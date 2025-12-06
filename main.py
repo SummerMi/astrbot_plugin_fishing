@@ -922,7 +922,14 @@ class FishingPlugin(Star):
             yield event.plain_result("❌ 抽奖池 ID 必须是数字，请检查后重试。")
             return
         pool_id = int(pool_id)
-        result = self.gacha_service.perform_draw(user_id, pool_id, num_draws=1)
+        # 允许自定义抽奖次数
+        num_draws = 1
+        if len(args) == 3:
+            num_draws = args[2]
+            if not num_draws.isdigit():
+                yield event.plain_result("❌ 抽奖次数 必须是数字，请检查后重试。")
+                return
+        result = self.gacha_service.perform_draw(user_id, pool_id, num_draws=num_draws)
         if result:
             if result["success"]:
                 items = result.get("results", [])
