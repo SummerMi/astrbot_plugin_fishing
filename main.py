@@ -339,7 +339,9 @@ class FishingPlugin(Star):
                 if fish_list:
                     message += f"\n {format_rarity_display(rarity)} 稀有度 {rarity}：\n"
                     for fish in fish_list:
-                        message += f"  - {fish['name']} x  {fish['quantity']} （{fish['base_value']}金币 / 个） \n"
+                        message += f"  - {fish['name']} x  {fish['quantity']} （{fish['actual_value_per_fish']}金币 / 个）\n"
+                        if fish['bonus_value_per_fish'] > 0:
+                            message += f"      [+{fish['bonus_value_per_fish']} ({fish['bonus_percentage']}%)]\n"
             message += f"\n🐟 总鱼数：{pond_fish['stats']['total_count']} 条\n"
             message += f"💰 总价值：{pond_fish['stats']['total_value']} 金币\n"
             yield event.plain_result(message)

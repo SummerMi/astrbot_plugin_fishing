@@ -253,7 +253,15 @@ class FishingService:
 
         # ??????
         weight = random.randint(fish_template.min_weight, fish_template.max_weight)
-        value = fish_template.base_value
+        # 价格随重量变化，最高可达原价2倍
+        if fish_template.max_weight > fish_template.min_weight:
+            # 计算重量比例 (0-1)
+            weight_ratio = (weight - fish_template.min_weight) / (fish_template.max_weight - fish_template.min_weight)
+            # 价格 = 基础价格 * (0.8 + 重量比例)，最低0.8倍，最高为2倍
+            value = int(fish_template.base_value * (0.8 + weight_ratio))
+        else:
+            # 防止除零错误，当最小重量等于最大重量时，使用基础价格
+            value = fish_template.base_value
 
         # ???5???????????????
         if fish_template.rarity == 5:
@@ -266,12 +274,17 @@ class FishingService:
         extra = random.random() <= (quality_modifier - 1)
         if extra:
             extra_weight = random.randint(fish_template.min_weight, fish_template.max_weight)
-            extra_value = fish_template.base_value
+            # 额外捕获的鱼也应用重量价格计算
+            if fish_template.max_weight > fish_template.min_weight:
+                extra_weight_ratio = (extra_weight - fish_template.min_weight) / (fish_template.max_weight - fish_template.min_weight)
+                extra_value = int(fish_template.base_value * (1 + extra_weight_ratio))
+            else:
+                extra_value = fish_template.base_value
             weight += extra_weight
             value += extra_value
 
         # 5. 更新数据库
-        self.inventory_repo.add_fish_to_inventory(user.user_id, fish_template.fish_id, quantity= 1 + extra)
+        self.inventory_repo.add_fish_to_inventory(user.user_id, fish_template.fish_id, quantity= 1 + extra, actual_value=value)
 
         # 更新用户统计数据
         user.total_fishing_count += 1 + extra
