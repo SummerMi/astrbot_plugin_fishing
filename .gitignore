@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# python venv
+.venv
 
-# 本地测试脚本
-.test/
+# poetry
+poetry.lock
