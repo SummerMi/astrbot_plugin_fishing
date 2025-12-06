@@ -184,30 +184,32 @@ class FishingService:
         # 4. 成功，生成渔获
         # 设置稀有度分布
         rarity_weights = {
-            1: [0.70, 0.10, 0.09, 0.01, 0.00],  # 强正偏：
-            2: [0.50, 0.30, 0.14, 0.05, 0.01],  # 中等正偏：
-            3: [0.21, 0.23, 0.25, 0.21, 0.10]   # 弱正偏/微负偏：
+            1: [0.75, 0.15, 0.07, 0.02, 0.01],  # 区域1：强正偏
+            2: [0.38, 0.30, 0.18, 0.10, 0.04],  # 区域2：中等正偏
+            3: [0.20, 0.25, 0.25, 0.20, 0.10]   # 区域3：弱正偏/微负偏
         }
         current_weights = rarity_weights.get(user.fishing_zone_id, rarity_weights[1])
         # 根据权重生成稀有度
         rarity_distribution = current_weights.copy()
         # 应用稀有度加成
         if rare_chance > 0.0:
-            # 增加稀有鱼出现的几率，实现负偏效果
-            # 为不同稀有度设置不同的加成系数，高稀有度获得更高的加成
-            rarity_levels = [1, 2, 3, 4, 5]  # 1星到5星
-            # 使用指数函数生成加成系数，确保高稀有度获得显著更多的加成
-            bonus_coefficients = [0.1, 0.3, 0.6, 1.0, 1.3]  # 可以根据需要调整这些系数
-            
+            MAX_RARE_CHANCE = 0.3
+            NON_LINEAR_POWER = 2.0  # 核心参数：设置为 2.0 实现平方增长
+            TARGET_MULTIPLIERS = [0.0, 0.10, 0.50, 1.00, 2.00]
             # 计算各稀有度的实际加成
+            normalized_rare_chance = rare_chance / MAX_RARE_CHANCE
+            non_linear_scale = normalized_rare_chance ** NON_LINEAR_POWER 
+            
+            # 2. 应用非线性加权
             rarity_distribution = [
-                x + rare_chance * bonus_coefficients[i] 
+                x * (1 + non_linear_scale * TARGET_MULTIPLIERS[i])
                 for i, x in enumerate(rarity_distribution)
             ]
-            
-            # 归一化概率分布
+                    
+            # 3. 归一化概率分布
             total = sum(rarity_distribution)
             rarity_distribution = [x / total for x in rarity_distribution]
+            
         zone = self.inventory_repo.get_zone_by_id(user.fishing_zone_id)
         is_rare_fish_available = zone.rare_fish_caught_today < zone.daily_rare_fish_quota
         if not is_rare_fish_available or user.fishing_zone_id == 1:
