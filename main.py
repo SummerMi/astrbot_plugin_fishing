@@ -1077,6 +1077,15 @@ class FishingPlugin(Star):
                 else:
                     message += f"💥 你投入 {contribution} 金币，获得了 {multiplier} 倍奖励！\n 💰 奖励金额：{reward} 金币（亏损：- {abs(profit)})\n"
                 message += f"剩余擦弹次数：{remaining_today} 次\n"
+
+                # ?????? GIF???????????????
+                gif_path = os.path.join(os.path.dirname(__file__), 'assets', 'wipe_bomb_small.gif')
+                if os.path.exists(gif_path):
+                    try:
+                        yield event.image_result(gif_path)
+                    except Exception as e:
+                        logger.warning(f"????????: {e}")
+
                 yield event.plain_result(message)
             else:
                 yield event.plain_result(f"⚠️ 擦弹失败：{result['message']}")

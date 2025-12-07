@@ -49,7 +49,7 @@ class InventoryService:
                 total_bonus_value += bonus_value
                 
                 bonus_value_per_fish = actual_value_per_fish - fish_template.base_value
-                bonus_percentage = (bonus_value_per_fish / fish_template.base_value * 100) if fish_template.base_value > 0 else 0
+                bonus_percentage = round(bonus_value_per_fish / fish_template.base_value * 100, 1) if fish_template.base_value > 0 else 0
                 enriched_items.append({
                     "name": fish_template.name,
                     "rarity": fish_template.rarity,
