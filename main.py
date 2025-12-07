@@ -305,7 +305,7 @@ class FishingPlugin(Star):
             from .draw.backpack import draw_backpack_image, get_user_backpack_data
             
             # 获取用户背包数据
-            backpack_data = get_user_backpack_data(self.inventory_service, user_id, user.coins)
+            backpack_data = get_user_backpack_data(self.inventory_service, user_id)
             
             # 设置用户昵称
             backpack_data['nickname'] = user.nickname or user_id

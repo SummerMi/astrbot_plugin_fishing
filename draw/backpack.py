@@ -160,7 +160,6 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
             - rods: 鱼竿列表
             - accessories: 饰品列表
             - baits: 鱼饵列表
-            - coins: 金币数量
     
     Returns:
         PIL.Image.Image: 生成的背包图像
@@ -344,7 +343,7 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
 
     # 用户信息卡片
     current_y = title_y + title_h + 15
-    card_height = 115
+    card_height = 80
     card_margin = 15
     # 保持与装备卡片一致的边距（30px左右边距，与装备区域对齐）
     user_card_margin = 30
@@ -381,7 +380,6 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
     rods_count = len(user_data.get('rods', []))
     accessories_count = len(user_data.get('accessories', []))
     baits_count = len(user_data.get('baits', []))
-    coins_count = int(user_data.get('coins', 0))
     
     # 计算总价值（简化估算）
     total_value = 0
@@ -405,15 +403,17 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
     
     stats_text = f"鱼竿: {rods_count} | 饰品: {accessories_count} | 鱼饵: {baits_count}"
     value_text = f"装备总价值: {int(total_value):,} 金币"
-    coins_count_text = f"剩余金币: {int(coins_count):,}"
     stats_w, stats_h = get_text_size(stats_text, small_font)
     value_w, value_h = get_text_size(value_text, small_font)
-    coins_w, coins_h = get_text_size(coins_count_text, small_font)
     gap = 24
     row_y = row2_y - 6
-    draw.text((col1_x, row_y), stats_text, font=small_font, fill=text_secondary)
-    draw.text((col1_x, row_y + stats_h + 4), value_text, font=small_font, fill=gold_color)
-    draw.text((col1_x, row_y + stats_h + value_h + 8), coins_count_text, font=small_font, fill=gold_color)
+    available_w = (width - card_margin - 10) - col1_x
+    if stats_w + gap + value_w <= available_w:
+        draw.text((col1_x, row_y), stats_text, font=small_font, fill=text_secondary)
+        draw.text((col1_x + stats_w + gap, row_y), value_text, font=small_font, fill=gold_color)
+    else:
+        draw.text((col1_x, row_y), stats_text, font=small_font, fill=text_secondary)
+        draw.text((col1_x, row_y + stats_h + 4), value_text, font=small_font, fill=gold_color)
 
     current_y += card_height + 20
 
@@ -744,7 +744,7 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
     return image
 
 
-def get_user_backpack_data(inventory_service, user_id: str, coins: int) -> Dict[str, Any]:
+def get_user_backpack_data(inventory_service, user_id: str) -> Dict[str, Any]:
     """
     获取用户背包数据
     
@@ -772,6 +772,5 @@ def get_user_backpack_data(inventory_service, user_id: str, coins: int) -> Dict[
         'nickname': user_id,  # 这里可以后续从用户服务获取昵称
         'rods': rods,
         'accessories': accessories,
-        'baits': baits,
-        'coins': coins
+        'baits': baits
     }
