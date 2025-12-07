@@ -744,7 +744,7 @@ def draw_backpack_image(user_data: Dict[str, Any]) -> Image.Image:
     return image
 
 
-def get_user_backpack_data(inventory_service, user_id: str) -> Dict[str, Any]:
+def get_user_backpack_data(inventory_service, user_id: str, coins: int) -> Dict[str, Any]:
     """
     获取用户背包数据
     
@@ -772,5 +772,6 @@ def get_user_backpack_data(inventory_service, user_id: str) -> Dict[str, Any]:
         'nickname': user_id,  # 这里可以后续从用户服务获取昵称
         'rods': rods,
         'accessories': accessories,
-        'baits': baits
+        'baits': baits,
+        'coins': coins
     }
